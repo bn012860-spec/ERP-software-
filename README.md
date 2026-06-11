@@ -234,6 +234,7 @@ A starter API Gateway scaffold has been added under `gateway/` to continue archi
 - ✅ Student Service (starter)
 - ✅ Academic Structure Service (starter)
 - 🔜 Academic Service
+- ✅ Profile Service (starter)
 - 🔜 Billing Service
 
 ---
@@ -285,3 +286,20 @@ A starter Academic Structure Service has been added under `academic-structure-se
   - `GET/POST /structure/sections`
 
 This service is the organizational backbone for Student, Attendance, Exams, Timetable, and Billing modules. It also enforces a single-current-academic-year invariant during creation.
+
+
+---
+
+## Profile Service (Phase 4 Starter)
+
+A starter Profile Service has been added under `profile-service/` with:
+
+- Prisma models for `TeacherProfile` and `StaffProfile`
+- JWT verification middleware inside the service
+- Shared `validateRequest` for payload validation
+- DB-aware `/health` endpoint
+- Routes under `/profiles`:
+  - `GET/POST /profiles/teachers`
+  - `GET/POST /profiles/staff`
+
+This service owns institutional profile metadata while Auth Service remains the source of authentication identity.

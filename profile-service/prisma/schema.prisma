@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PROFILE_DATABASE_URL")
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model TeacherProfile {
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  employeeCode String       @unique
+  departmentId String
+  designation  String
+  joiningDate  DateTime
+  status       RecordStatus @default(ACTIVE)
+  deletedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([departmentId, status, deletedAt])
+}
+
+model StaffProfile {
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  employeeCode String       @unique
+  departmentId String
+  role         String
+  joiningDate  DateTime
+  status       RecordStatus @default(ACTIVE)
+  deletedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([departmentId, status, deletedAt])
+}
