@@ -13,7 +13,7 @@ app.get("/health", async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     return sendSuccess(res, { status: "ok", service: "profile-service", database: "connected" });
   } catch {
-    return sendError(res, 503, "Profile service database is disconnected", ErrorCode.INTERNAL_ERROR, { status: "degraded", service: "profile-service", database: "disconnected" });
+    return sendError(res, 503, "Profile service database is disconnected", ErrorCode.SERVICE_UNAVAILABLE, { status: "degraded", service: "profile-service", database: "disconnected" });
   }
 });
 

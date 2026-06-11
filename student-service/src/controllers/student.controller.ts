@@ -1,6 +1,6 @@
 import { Prisma, StudentStatus } from "@prisma/client";
 import { Request, Response } from "express";
-import { ErrorCode, buildPaginationMeta, sendSuccess } from "../../../packages/shared/src";
+import { ErrorCode, ResourceStatus, buildPaginationMeta, sendSuccess } from "../../../packages/shared/src";
 import prisma from "../config/prisma";
 import { AppError } from "../middleware/error-handler.middleware";
 import { OrderSchema, SortBySchema } from "../validation/student.schemas";
@@ -127,7 +127,7 @@ export const archiveStudent = async (req: Request, res: Response): Promise<Respo
 
   const student = await prisma.student.update({
     where: { id: studentId },
-    data: { status: StudentStatus.ARCHIVED, deletedAt: new Date() },
+    data: { status: ResourceStatus.ARCHIVED, deletedAt: new Date() },
   });
 
   logEvent(req, "student_archive_success", "info", { studentId });
@@ -143,14 +143,14 @@ export const restoreStudent = async (req: Request, res: Response): Promise<Respo
     throw new AppError(404, "Student not found", ErrorCode.NOT_FOUND);
   }
 
-  if (!existing.deletedAt && existing.status !== StudentStatus.ARCHIVED) {
+  if (!existing.deletedAt && existing.status !== ResourceStatus.ARCHIVED) {
     logEvent(req, "student_restore_skipped", "warn", { studentId, reason: "already_active" });
     throw new AppError(400, "Student is already active", ErrorCode.CONFLICT);
   }
 
   const student = await prisma.student.update({
     where: { id: studentId },
-    data: { status: StudentStatus.ACTIVE, deletedAt: null },
+    data: { status: ResourceStatus.ACTIVE, deletedAt: null },
   });
 
   logEvent(req, "student_restore_success", "info", { studentId });

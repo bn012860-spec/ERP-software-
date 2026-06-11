@@ -14,7 +14,7 @@ app.get("/health", async (_req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     return sendSuccess(res, { status: "ok", service: "student-service", database: "connected" });
   } catch {
-    return sendError(res, 503, "Student service database is disconnected", ErrorCode.INTERNAL_ERROR, { status: "degraded", service: "student-service", database: "disconnected" });
+    return sendError(res, 503, "Student service database is disconnected", ErrorCode.SERVICE_UNAVAILABLE, { status: "degraded", service: "student-service", database: "disconnected" });
   }
 });
 

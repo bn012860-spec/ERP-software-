@@ -106,7 +106,7 @@ app.use((req, res, next) => {
       statusGroup: getStatusGroup(status),
       service: "api-gateway",
     });
-    return sendError(res, status, "Too many requests", ErrorCode.FORBIDDEN);
+    return sendError(res, status, "Too many requests", ErrorCode.RATE_LIMITED);
   }
 
   return next();

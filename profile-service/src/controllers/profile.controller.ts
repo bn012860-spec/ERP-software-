@@ -1,6 +1,6 @@
-import { Prisma, RecordStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
-import { ErrorCode, sendError, sendSuccess } from "../../../packages/shared/src";
+import { ErrorCode, ResourceStatus, sendError, sendSuccess } from "../../../packages/shared/src";
 import prisma from "../config/prisma";
 
 const buildTeacherWhere = (req: Request): Prisma.TeacherProfileWhereInput => {
@@ -9,7 +9,7 @@ const buildTeacherWhere = (req: Request): Prisma.TeacherProfileWhereInput => {
 
   return {
     deletedAt: null,
-    status: "ACTIVE",
+    status: ResourceStatus.ACTIVE,
     ...(departmentId ? { departmentId } : {}),
     ...(search
       ? {
@@ -28,7 +28,7 @@ const buildStaffWhere = (req: Request): Prisma.StaffProfileWhereInput => {
 
   return {
     deletedAt: null,
-    status: "ACTIVE",
+    status: ResourceStatus.ACTIVE,
     ...(departmentId ? { departmentId } : {}),
     ...(search
       ? {
@@ -79,7 +79,7 @@ export const archiveTeacher = async (req: Request, res: Response): Promise<Respo
 
   const data = await prisma.teacherProfile.update({
     where: { id: req.params.teacherId },
-    data: { status: RecordStatus.ARCHIVED, deletedAt: new Date() },
+    data: { status: ResourceStatus.ARCHIVED, deletedAt: new Date() },
   });
   return sendSuccess(res, data);
 };
@@ -87,11 +87,11 @@ export const archiveTeacher = async (req: Request, res: Response): Promise<Respo
 export const restoreTeacher = async (req: Request, res: Response): Promise<Response> => {
   const existing = await prisma.teacherProfile.findUnique({ where: { id: req.params.teacherId } });
   if (!existing) return sendError(res, 404, "Teacher profile not found", ErrorCode.NOT_FOUND);
-  if (!existing.deletedAt && existing.status !== RecordStatus.ARCHIVED) return sendError(res, 400, "Teacher profile is already active", ErrorCode.CONFLICT);
+  if (!existing.deletedAt && existing.status !== ResourceStatus.ARCHIVED) return sendError(res, 400, "Teacher profile is already active", ErrorCode.CONFLICT);
 
   const data = await prisma.teacherProfile.update({
     where: { id: req.params.teacherId },
-    data: { status: RecordStatus.ACTIVE, deletedAt: null },
+    data: { status: ResourceStatus.ACTIVE, deletedAt: null },
   });
   return sendSuccess(res, data);
 };
@@ -134,7 +134,7 @@ export const archiveStaff = async (req: Request, res: Response): Promise<Respons
 
   const data = await prisma.staffProfile.update({
     where: { id: req.params.staffId },
-    data: { status: RecordStatus.ARCHIVED, deletedAt: new Date() },
+    data: { status: ResourceStatus.ARCHIVED, deletedAt: new Date() },
   });
   return sendSuccess(res, data);
 };
@@ -142,11 +142,11 @@ export const archiveStaff = async (req: Request, res: Response): Promise<Respons
 export const restoreStaff = async (req: Request, res: Response): Promise<Response> => {
   const existing = await prisma.staffProfile.findUnique({ where: { id: req.params.staffId } });
   if (!existing) return sendError(res, 404, "Staff profile not found", ErrorCode.NOT_FOUND);
-  if (!existing.deletedAt && existing.status !== RecordStatus.ARCHIVED) return sendError(res, 400, "Staff profile is already active", ErrorCode.CONFLICT);
+  if (!existing.deletedAt && existing.status !== ResourceStatus.ARCHIVED) return sendError(res, 400, "Staff profile is already active", ErrorCode.CONFLICT);
 
   const data = await prisma.staffProfile.update({
     where: { id: req.params.staffId },
-    data: { status: RecordStatus.ACTIVE, deletedAt: null },
+    data: { status: ResourceStatus.ACTIVE, deletedAt: null },
   });
   return sendSuccess(res, data);
 };

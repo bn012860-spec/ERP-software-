@@ -1,4 +1,4 @@
-import { RecordStatus } from "@prisma/client";
+import { ResourceStatus } from "../../../packages/shared/src";
 import { z } from "zod";
 
 export const CreateTeacherProfileSchema = z.object({
@@ -15,7 +15,7 @@ export const UpdateTeacherProfileSchema = z
     departmentId: z.string().uuid().optional(),
     designation: z.string().min(1).optional(),
     joiningDate: z.string().datetime().optional(),
-    status: z.nativeEnum(RecordStatus).optional(),
+    status: z.nativeEnum(ResourceStatus).optional(),
   })
   .strict();
 
@@ -33,6 +33,6 @@ export const UpdateStaffProfileSchema = z
     departmentId: z.string().uuid().optional(),
     role: z.string().min(1).optional(),
     joiningDate: z.string().datetime().optional(),
-    status: z.nativeEnum(RecordStatus).optional(),
+    status: z.nativeEnum(ResourceStatus).optional(),
   })
   .strict();

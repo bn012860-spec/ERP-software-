@@ -319,6 +319,7 @@ The shared package under `packages/shared/` now provides:
 - `validateRequest`
 - `logEvent`, `logInfo`, `logWarn`, `logError`
 - Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`, `AuthenticatedRequest`)
-- Shared error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_ERROR`, etc.)
+- Shared error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `RATE_LIMITED`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_ERROR`, `SERVICE_UNAVAILABLE`, `RESOURCE_ARCHIVED`, `RESOURCE_ALREADY_EXISTS`, etc.)
 - Pagination helper (`buildPaginationMeta`)
+- Shared enums (`ResourceStatus`, `AttendanceStatus`) for reusable lifecycle and attendance domain contracts
 - Response helpers (`sendSuccess`, `sendError`) for standardized API envelopes

@@ -69,7 +69,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     if (existingUser) {
       logAuthEvent(req, "register_conflict", "warn", { email: normalizedEmail });
-      return sendError(res, 409, "Email already registered", ErrorCode.CONFLICT);
+      return sendError(res, 409, "Email already registered", ErrorCode.RESOURCE_ALREADY_EXISTS);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);

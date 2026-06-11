@@ -94,5 +94,5 @@ export const normalizeGatewayError = (err: unknown, res: Response): Response => 
       ? err.message
       : "Internal server error";
 
-  return sendError(res, status, message, ErrorCode.INTERNAL_ERROR);
+  return sendError(res, status, message, ErrorCode.SERVICE_UNAVAILABLE);
 };
