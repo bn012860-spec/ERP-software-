@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ErrorCode, sendError } from "../../packages/shared/src";
+import { ErrorCode, sendError } from "@erp/shared";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 interface AuthTokenPayload extends JwtPayload {

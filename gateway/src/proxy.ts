@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ErrorCode, sendError } from "../../packages/shared/src";
+import { ErrorCode, sendError } from "@erp/shared";
 
 const hopByHopHeaders = new Set([
   "connection",

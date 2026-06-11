@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ErrorCode, ResourceStatus, sendError, sendSuccess } from "../../../packages/shared/src";
+import { ErrorCode, ResourceStatus, sendError, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 
 export const listAcademicYears = async (_req: Request, res: Response): Promise<Response> => {

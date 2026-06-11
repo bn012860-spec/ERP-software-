@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
-import { ErrorCode, ResourceStatus, sendError, sendSuccess } from "../../../packages/shared/src";
+import { ErrorCode, ResourceStatus, sendError, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 
 const buildTeacherWhere = (req: Request): Prisma.TeacherProfileWhereInput => {

@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ErrorCode, sendError, sendSuccess } from "../../packages/shared/src";
+import { ErrorCode, sendError, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 
 const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"] as const;

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ErrorCode, sendError } from "../../../packages/shared/src";
+import { ErrorCode, sendError } from "@erp/shared";
 import { config } from "../config";
 
 interface GatewayTokenPayload extends JwtPayload {

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
-import { AppError, AttendanceMarkSource, AttendanceStatus, ErrorCode, buildPaginationMeta, sendSuccess } from "../../../packages/shared/src";
+import { AppError, AttendanceMarkSource, AttendanceStatus, ErrorCode, buildPaginationMeta, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 import { AttendanceOrderSchema, AttendanceSortBySchema } from "../validation/attendance.schemas";
 
