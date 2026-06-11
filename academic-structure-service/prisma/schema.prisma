@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ACADEMIC_STRUCTURE_DATABASE_URL")
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model AcademicYear {
+  id        String       @id @default(uuid())
+  name      String       @unique
+  startDate DateTime
+  endDate   DateTime
+  isCurrent Boolean      @default(false)
+  status    RecordStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  classes Class[]
+}
+
+model Department {
+  id          String       @id @default(uuid())
+  name        String
+  code        String       @unique
+  description String?
+  status      RecordStatus @default(ACTIVE)
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  programs Program[]
+
+  @@index([status, deletedAt])
+}
+
+model Program {
+  id            String       @id @default(uuid())
+  departmentId  String
+  name          String
+  code          String
+  durationYears Int
+  status        RecordStatus @default(ACTIVE)
+  deletedAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id])
+  classes    Class[]
+
+  @@index([departmentId])
+  @@index([status, deletedAt])
+  @@unique([departmentId, code])
+}
+
+model Class {
+  id             String       @id @default(uuid())
+  programId      String
+  academicYearId String
+  name           String
+  semester       Int
+  sectionCount   Int
+  status         RecordStatus @default(ACTIVE)
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  program      Program      @relation(fields: [programId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+  sections     Section[]
+
+  @@index([programId, academicYearId])
+  @@index([status, deletedAt])
+}
+
+model Section {
+  id        String       @id @default(uuid())
+  classId   String
+  name      String
+  capacity  Int
+  status    RecordStatus @default(ACTIVE)
+  deletedAt DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  class Class @relation(fields: [classId], references: [id])
+
+  @@index([classId])
+  @@index([status, deletedAt])
+  @@unique([classId, name])
+}

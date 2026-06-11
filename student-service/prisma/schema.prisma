@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("STUDENT_DATABASE_URL")
+}
+
+enum StudentStatus {
+  ACTIVE
+  SUSPENDED
+  GRADUATED
+  ARCHIVED
+}
+
+model Student {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  studentCode     String        @unique
+  rollNumber      String
+  admissionNumber String        @unique
+  classId         String
+  sectionId       String
+  departmentId    String
+  academicYearId  String
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime
+  gender          String
+  phone           String?
+  status          StudentStatus @default(ACTIVE)
+  deletedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([classId, sectionId, academicYearId])
+  @@index([departmentId, academicYearId])
+  @@index([status, deletedAt])
+  @@unique([academicYearId, rollNumber])
+}
