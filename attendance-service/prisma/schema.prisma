@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ATTENDANCE_DATABASE_URL")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum AttendanceMarkSource {
+  MANUAL
+  IMPORT
+  SYSTEM
+}
+
+model StudentAttendance {
+  id                       String               @id @default(uuid())
+  studentId                String
+  classId                  String
+  sectionId                String
+  academicYearId           String
+  attendanceDate           DateTime
+  status                   AttendanceStatus
+  markedByTeacherProfileId String?
+  markSource               AttendanceMarkSource @default(MANUAL)
+  remarks                  String?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+  @@unique([studentId, attendanceDate])
+  @@index([classId, sectionId, attendanceDate])
+  @@index([academicYearId, attendanceDate])
+  @@index([status, attendanceDate])
+  @@index([markedByTeacherProfileId])
+}
+
+model TeacherAttendance {
+  id               String               @id @default(uuid())
+  teacherProfileId String
+  attendanceDate   DateTime
+  status           AttendanceStatus
+  markSource       AttendanceMarkSource @default(MANUAL)
+  remarks          String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([teacherProfileId, attendanceDate])
+  @@index([attendanceDate])
+  @@index([status, attendanceDate])
+}
