@@ -250,8 +250,9 @@ A Student Service starter has been added under `student-service/` with:
 
 - Prisma schema for student identity/enrollment profile boundaries
 - JWT verification middleware inside the service (defense in depth)
+- Zod-based payload validation for create/update student endpoints
 - Routes:
-  - `GET /students?page=1&limit=20&status=ACTIVE&classId=cls_1&search=nakul` (pagination + filtering)
+  - `GET /students?page=1&limit=20&status=ACTIVE&classId=cls_1&search=nakul&sortBy=firstName&order=asc` (pagination + filtering + sorting)
   - `POST /students`
   - `GET /students/:studentId`
   - `PATCH /students/:studentId`

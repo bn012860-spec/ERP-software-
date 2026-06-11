@@ -1,6 +1,44 @@
-import { StudentStatus } from "@prisma/client";
+import { Prisma, StudentStatus } from "@prisma/client";
 import { Request, Response } from "express";
+import { z } from "zod";
 import prisma from "../config/prisma";
+
+const CreateStudentSchema = z.object({
+  userId: z.string().min(1),
+  studentCode: z.string().min(1),
+  rollNumber: z.string().min(1),
+  admissionNumber: z.string().min(1),
+  classId: z.string().min(1),
+  sectionId: z.string().min(1),
+  departmentId: z.string().min(1),
+  academicYearId: z.string().min(1),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  dateOfBirth: z.string().min(1),
+  gender: z.string().min(1),
+  phone: z.string().optional(),
+});
+
+const UpdateStudentSchema = z
+  .object({
+    studentCode: z.string().min(1).optional(),
+    rollNumber: z.string().min(1).optional(),
+    admissionNumber: z.string().min(1).optional(),
+    classId: z.string().min(1).optional(),
+    sectionId: z.string().min(1).optional(),
+    departmentId: z.string().min(1).optional(),
+    academicYearId: z.string().min(1).optional(),
+    firstName: z.string().min(1).optional(),
+    lastName: z.string().min(1).optional(),
+    dateOfBirth: z.string().min(1).optional(),
+    gender: z.string().min(1).optional(),
+    phone: z.string().nullable().optional(),
+    status: z.nativeEnum(StudentStatus).optional(),
+  })
+  .strict();
+
+const SortBySchema = z.enum(["createdAt", "firstName", "lastName", "studentCode"]);
+const OrderSchema = z.enum(["asc", "desc"]);
 
 const logEvent = (req: Request, type: string, level: "info" | "warn" | "error", extra?: Record<string, unknown>): void => {
   console.log(
@@ -26,9 +64,11 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
     const statusQuery = req.query.status;
     const classIdQuery = req.query.classId;
     const searchQuery = req.query.search;
+    const sortBy = SortBySchema.safeParse(req.query.sortBy).success ? (req.query.sortBy as z.infer<typeof SortBySchema>) : "createdAt";
+    const order = OrderSchema.safeParse(req.query.order).success ? (req.query.order as z.infer<typeof OrderSchema>) : "desc";
 
-    const where = {
-      deletedAt: null as null,
+    const where: Prisma.StudentWhereInput = {
+      deletedAt: null,
       ...(typeof statusQuery === "string" && Object.values(StudentStatus).includes(statusQuery as StudentStatus)
         ? { status: statusQuery as StudentStatus }
         : {}),
@@ -38,10 +78,10 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
       ...(typeof searchQuery === "string" && searchQuery.trim().length > 0
         ? {
             OR: [
-              { firstName: { contains: searchQuery.trim(), mode: "insensitive" as const } },
-              { lastName: { contains: searchQuery.trim(), mode: "insensitive" as const } },
-              { studentCode: { contains: searchQuery.trim(), mode: "insensitive" as const } },
-              { admissionNumber: { contains: searchQuery.trim(), mode: "insensitive" as const } },
+              { firstName: { contains: searchQuery.trim(), mode: "insensitive" } },
+              { lastName: { contains: searchQuery.trim(), mode: "insensitive" } },
+              { studentCode: { contains: searchQuery.trim(), mode: "insensitive" } },
+              { admissionNumber: { contains: searchQuery.trim(), mode: "insensitive" } },
             ],
           }
         : {}),
@@ -53,7 +93,7 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: { [sortBy]: order },
       }),
     ]);
 
@@ -62,11 +102,8 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
       limit,
       count: students.length,
       total,
-      filters: {
-        status: typeof statusQuery === "string" ? statusQuery : null,
-        classId: typeof classIdQuery === "string" ? classIdQuery : null,
-        search: typeof searchQuery === "string" ? searchQuery : null,
-      },
+      sortBy,
+      order,
     });
 
     return res.json({
@@ -79,6 +116,7 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
         classId: typeof classIdQuery === "string" ? classIdQuery : null,
         search: typeof searchQuery === "string" ? searchQuery : null,
       },
+      sort: { sortBy, order },
       data: students,
     });
   } catch (err) {
@@ -89,42 +127,17 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
 
 export const createStudent = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const {
-      userId,
-      studentCode,
-      rollNumber,
-      admissionNumber,
-      classId,
-      sectionId,
-      departmentId,
-      academicYearId,
-      firstName,
-      lastName,
-      dateOfBirth,
-      gender,
-      phone,
-    } = req.body as Record<string, string>;
+    const parsed = CreateStudentSchema.safeParse(req.body);
 
-    if (!userId || !studentCode || !rollNumber || !admissionNumber || !classId || !sectionId || !departmentId || !academicYearId || !firstName || !lastName || !dateOfBirth || !gender) {
-      logEvent(req, "student_create_validation_failed", "warn", { reason: "missing_fields" });
-      return res.status(400).json({ error: "Missing required student fields" });
+    if (!parsed.success) {
+      logEvent(req, "student_create_validation_failed", "warn", { reason: "invalid_payload" });
+      return res.status(400).json({ error: "Invalid student payload", issues: parsed.error.flatten() });
     }
 
     const student = await prisma.student.create({
       data: {
-        userId,
-        studentCode,
-        rollNumber,
-        admissionNumber,
-        classId,
-        sectionId,
-        departmentId,
-        academicYearId,
-        firstName,
-        lastName,
-        dateOfBirth: new Date(dateOfBirth),
-        gender,
-        phone,
+        ...parsed.data,
+        dateOfBirth: new Date(parsed.data.dateOfBirth),
       },
     });
 
@@ -159,6 +172,13 @@ export const updateStudent = async (req: Request, res: Response): Promise<Respon
   try {
     const { studentId } = req.params;
 
+    const parsed = UpdateStudentSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      logEvent(req, "student_update_validation_failed", "warn", { reason: "invalid_payload", studentId });
+      return res.status(400).json({ error: "Invalid update payload", issues: parsed.error.flatten() });
+    }
+
     const existing = await prisma.student.findFirst({ where: { id: studentId, deletedAt: null } });
 
     if (!existing) {
@@ -166,9 +186,14 @@ export const updateStudent = async (req: Request, res: Response): Promise<Respon
       return res.status(404).json({ error: "Student not found" });
     }
 
+    const updateData: Prisma.StudentUpdateInput = {
+      ...parsed.data,
+      ...(parsed.data.dateOfBirth ? { dateOfBirth: new Date(parsed.data.dateOfBirth) } : {}),
+    };
+
     const student = await prisma.student.update({
       where: { id: studentId },
-      data: req.body,
+      data: updateData,
     });
 
     logEvent(req, "student_update_success", "info", { studentId });
