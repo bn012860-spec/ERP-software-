@@ -318,4 +318,5 @@ The shared package under `packages/shared/` now provides:
 - `AppError`
 - `validateRequest`
 - `logEvent`, `logInfo`, `logWarn`, `logError`
-- Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`)
+- Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`, `AuthenticatedRequest`)
+- Response helpers (`sendSuccess`, `sendError`) for standardized API envelopes

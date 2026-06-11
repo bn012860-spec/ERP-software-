@@ -1,3 +1,5 @@
+import { Request } from "express";
+
 export interface AuthUser {
   userId: string;
   role: string;
@@ -30,4 +32,8 @@ export interface ApiErrorBody {
 export interface ApiErrorResponse {
   success: false;
   error: ApiErrorBody;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: AuthUser;
 }
