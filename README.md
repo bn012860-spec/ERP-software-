@@ -251,6 +251,8 @@ A Student Service starter has been added under `student-service/` with:
 - Prisma schema for student identity/enrollment profile boundaries
 - JWT verification middleware inside the service (defense in depth)
 - Zod-based payload validation for create/update student endpoints
+- Shared validation middleware (`validateRequest`) for consistent request contract enforcement
+- Centralized error handler middleware for consistent API error shapes
 - Routes:
   - `GET /students?page=1&limit=20&status=ACTIVE&classId=cls_1&search=nakul&sortBy=firstName&order=asc` (pagination + filtering + sorting)
   - `POST /students`
@@ -259,4 +261,4 @@ A Student Service starter has been added under `student-service/` with:
   - `DELETE /students/:studentId` (soft archive)
   - `POST /students/:studentId/restore` (restore archived student)
 - Soft-delete support via `deletedAt` + `ARCHIVED` status
-- `/health` endpoint and graceful shutdown handling
+- `/health` endpoint with database connectivity status and graceful shutdown handling
