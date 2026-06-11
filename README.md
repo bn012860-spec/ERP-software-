@@ -232,6 +232,7 @@ A starter API Gateway scaffold has been added under `gateway/` to continue archi
 
 - ✅ Auth Service (current)
 - ✅ Student Service (starter)
+- ✅ Academic Structure Service (starter)
 - 🔜 Academic Service
 - 🔜 Billing Service
 
@@ -262,3 +263,22 @@ A Student Service starter has been added under `student-service/` with:
   - `POST /students/:studentId/restore` (restore archived student)
 - Soft-delete support via `deletedAt` + `ARCHIVED` status
 - `/health` endpoint with database connectivity status and graceful shutdown handling
+
+
+---
+
+## Academic Structure Service (Phase 3 Starter)
+
+A starter Academic Structure Service has been added under `academic-structure-service/` with:
+
+- Prisma models for `AcademicYear`, `Department`, `Program`, `Class`, and `Section`
+- JWT verification middleware inside the service
+- DB-aware `/health` endpoint
+- Routes under `/structure` for list/create operations:
+  - `GET/POST /structure/academic-years`
+  - `GET/POST /structure/departments`
+  - `GET/POST /structure/programs`
+  - `GET/POST /structure/classes`
+  - `GET/POST /structure/sections`
+
+This service is the organizational backbone for Student, Attendance, Exams, Timetable, and Billing modules.
