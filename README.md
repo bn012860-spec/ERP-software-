@@ -273,9 +273,11 @@ A starter Academic Structure Service has been added under `academic-structure-se
 
 - Prisma models for `AcademicYear`, `Department`, `Program`, `Class`, and `Section`
 - JWT verification middleware inside the service
+- Zod validation middleware for structure create endpoints
 - DB-aware `/health` endpoint
 - Routes under `/structure` for list/create operations:
   - `GET/POST /structure/academic-years`
+  - `GET /structure/academic-years/current`
   - `GET/POST /structure/departments`
   - `GET/POST /structure/programs`
   - `GET/POST /structure/classes`

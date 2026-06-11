@@ -6,8 +6,39 @@ export const listAcademicYears = async (_req: Request, res: Response): Promise<R
   return res.json(data);
 };
 
+export const getCurrentAcademicYear = async (_req: Request, res: Response): Promise<Response> => {
+  const current = await prisma.academicYear.findFirst({ where: { isCurrent: true, status: "ACTIVE" } });
+
+  if (!current) {
+    return res.status(404).json({ error: "Current academic year not found" });
+  }
+
+  return res.json(current);
+};
+
 export const createAcademicYear = async (req: Request, res: Response): Promise<Response> => {
-  const data = await prisma.academicYear.create({ data: req.body });
+  const payload = req.body as {
+    name: string;
+    startDate: string;
+    endDate: string;
+    isCurrent?: boolean;
+  };
+
+  const data = await prisma.$transaction(async (tx) => {
+    if (payload.isCurrent) {
+      await tx.academicYear.updateMany({ where: { isCurrent: true }, data: { isCurrent: false } });
+    }
+
+    return tx.academicYear.create({
+      data: {
+        name: payload.name,
+        startDate: new Date(payload.startDate),
+        endDate: new Date(payload.endDate),
+        isCurrent: payload.isCurrent ?? false,
+      },
+    });
+  });
+
   return res.status(201).json(data);
 };
 
