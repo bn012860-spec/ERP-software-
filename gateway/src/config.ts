@@ -5,6 +5,7 @@ export const config = {
     auth: process.env.AUTH_SERVICE_URL ?? "http://localhost:5000",
     students: process.env.STUDENT_SERVICE_URL ?? "http://localhost:5001",
     academic: process.env.ACADEMIC_SERVICE_URL ?? "http://localhost:5002",
+    profiles: process.env.PROFILE_SERVICE_URL ?? "http://localhost:5004",
     billing: process.env.BILLING_SERVICE_URL ?? "http://localhost:5003",
   },
 };

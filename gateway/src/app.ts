@@ -176,12 +176,12 @@ app.get("/health", (_req, res) => {
 
 app.use(
   "/api/auth",
-  proxyToService("auth-service", config.services.auth, "/api/auth", "/api/auth/*"),
+  proxyToService("auth-service", config.services.auth, "/api", "/api/auth/*"),
 );
 app.use(
   "/api/students",
   gatewayAuthenticate,
-  proxyToService("student-service", config.services.students, "/api/students", "/api/students/*"),
+  proxyToService("student-service", config.services.students, "/api", "/api/students/*"),
 );
 app.use(
   "/api/academic",
@@ -189,9 +189,19 @@ app.use(
   proxyToService("academic-service", config.services.academic, "/api/academic", "/api/academic/*"),
 );
 app.use(
+  "/api/structure",
+  gatewayAuthenticate,
+  proxyToService("academic-structure-service", config.services.academic, "/api", "/api/structure/*"),
+);
+app.use(
+  "/api/profiles",
+  gatewayAuthenticate,
+  proxyToService("profile-service", config.services.profiles, "/api", "/api/profiles/*"),
+);
+app.use(
   "/api/billing",
   gatewayAuthenticate,
-  proxyToService("billing-service", config.services.billing, "/api/billing", "/api/billing/*"),
+  proxyToService("billing-service", config.services.billing, "/api", "/api/billing/*"),
 );
 
 export default app;

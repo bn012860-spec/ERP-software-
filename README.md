@@ -300,6 +300,22 @@ A starter Profile Service has been added under `profile-service/` with:
 - DB-aware `/health` endpoint
 - Routes under `/profiles`:
   - `GET/POST /profiles/teachers`
+  - `GET/PATCH/DELETE /profiles/teachers/:teacherId`
+  - `POST /profiles/teachers/:teacherId/restore`
   - `GET/POST /profiles/staff`
+  - `GET/PATCH/DELETE /profiles/staff/:staffId`
+  - `POST /profiles/staff/:staffId/restore`
 
 This service owns institutional profile metadata while Auth Service remains the source of authentication identity.
+
+
+---
+
+## Shared Package
+
+The shared package under `packages/shared/` now provides:
+
+- `AppError`
+- `validateRequest`
+- `logEvent`, `logInfo`, `logWarn`, `logError`
+- Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`)
