@@ -26,6 +26,7 @@ This prevents header spoofing when a service is called directly outside the gate
 - `/api/structure/*` → Academic Structure Service (JWT required)
 - `/api/academic/*` → Academic Service (planned, JWT required)
 - `/api/profiles/*` → Profile Service (JWT required)
+- `/api/attendance/*` → Attendance Service (JWT required)
 - `/api/billing/*` → Billing Service (JWT required)
 
 ## Environment Variables
@@ -38,6 +39,7 @@ STUDENT_SERVICE_URL=http://localhost:5001
 ACADEMIC_SERVICE_URL=http://localhost:5002
 BILLING_SERVICE_URL=http://localhost:5003
 PROFILE_SERVICE_URL=http://localhost:5004
+ATTENDANCE_SERVICE_URL=http://localhost:5005
 ```
 
 ## Request Flow

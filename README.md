@@ -1,8 +1,8 @@
-# ERP Software (Microservices) — Auth Service
+# ERP Software (Microservices)
 
-This repository currently contains **Phase 1** of the ERP platform: the **Authentication Service**.
+This repository contains the Phase 1 ERP microservices foundation: Auth, Gateway, Student, Academic Structure, Profile, Attendance, and a shared platform package.
 
-We are building the ERP system **service by service**, starting with auth first, then expanding to additional domain services.
+We are building the ERP system **service by service**, starting with auth and then expanding into domain services behind the gateway.
 
 ---
 
@@ -235,6 +235,7 @@ A starter API Gateway scaffold has been added under `gateway/` to continue archi
 - ✅ Academic Structure Service (starter)
 - 🔜 Academic Service
 - ✅ Profile Service (starter)
+- ✅ Attendance Service (starter)
 - 🔜 Billing Service
 
 ---
@@ -311,6 +312,27 @@ This service owns institutional profile metadata while Auth Service remains the 
 
 ---
 
+## Attendance Service (Phase 5 Starter)
+
+A starter Attendance Service has been added under `attendance-service/` with daily attendance tracking for students and teachers.
+
+- Prisma models for `StudentAttendance` and `TeacherAttendance`
+- Shared `AttendanceStatus` (`PRESENT`, `ABSENT`, `LATE`, `EXCUSED`) and `AttendanceMarkSource` (`MANUAL`, `IMPORT`, `SYSTEM`) contracts
+- JWT verification middleware inside the service
+- Shared `validateRequest` for request payload validation
+- Shared response envelopes and shared pagination metadata
+- DB-aware `/health` endpoint
+- Routes under `/attendance`:
+  - `GET/POST /attendance/students`
+  - `PATCH /attendance/students/:attendanceId`
+  - `GET/POST /attendance/teachers`
+  - `PATCH /attendance/teachers/:attendanceId`
+
+This service intentionally starts with daily attendance first. Period-wise attendance can be added later after timetable and subject allocation services exist.
+
+
+---
+
 ## Shared Package
 
 The shared package under `packages/shared/` now provides:
@@ -321,5 +343,5 @@ The shared package under `packages/shared/` now provides:
 - Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`, `AuthenticatedRequest`)
 - Shared error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `RATE_LIMITED`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_ERROR`, `SERVICE_UNAVAILABLE`, `RESOURCE_ARCHIVED`, `RESOURCE_ALREADY_EXISTS`, etc.)
 - Pagination helper (`buildPaginationMeta`)
-- Shared enums (`ResourceStatus`, `AttendanceStatus`) for reusable lifecycle and attendance domain contracts
+- Shared enums (`ResourceStatus`, `AttendanceStatus`, `AttendanceType`, `AttendanceMarkSource`) for reusable lifecycle and attendance domain contracts
 - Response helpers (`sendSuccess`, `sendError`) for standardized API envelopes

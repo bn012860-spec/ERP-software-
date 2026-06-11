@@ -200,6 +200,11 @@ app.use(
   proxyToService("profile-service", config.services.profiles, "/api", "/api/profiles/*"),
 );
 app.use(
+  "/api/attendance",
+  gatewayAuthenticate,
+  proxyToService("attendance-service", config.services.attendance, "/api", "/api/attendance/*"),
+);
+app.use(
   "/api/billing",
   gatewayAuthenticate,
   proxyToService("billing-service", config.services.billing, "/api", "/api/billing/*"),
