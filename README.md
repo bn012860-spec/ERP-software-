@@ -274,6 +274,7 @@ A starter Academic Structure Service has been added under `academic-structure-se
 - Prisma models for `AcademicYear`, `Department`, `Program`, `Class`, and `Section`
 - JWT verification middleware inside the service
 - Zod validation middleware for structure create endpoints
+- Shared `validateRequest` from `packages/shared`
 - DB-aware `/health` endpoint
 - Routes under `/structure` for list/create operations:
   - `GET/POST /structure/academic-years`
@@ -283,4 +284,4 @@ A starter Academic Structure Service has been added under `academic-structure-se
   - `GET/POST /structure/classes`
   - `GET/POST /structure/sections`
 
-This service is the organizational backbone for Student, Attendance, Exams, Timetable, and Billing modules.
+This service is the organizational backbone for Student, Attendance, Exams, Timetable, and Billing modules. It also enforces a single-current-academic-year invariant during creation.

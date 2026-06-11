@@ -32,19 +32,23 @@ model Department {
   code        String       @unique
   description String?
   status      RecordStatus @default(ACTIVE)
+  deletedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   programs Program[]
+
+  @@index([status, deletedAt])
 }
 
 model Program {
   id            String       @id @default(uuid())
   departmentId  String
   name          String
-  code          String       @unique
+  code          String
   durationYears Int
   status        RecordStatus @default(ACTIVE)
+  deletedAt     DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -52,6 +56,8 @@ model Program {
   classes    Class[]
 
   @@index([departmentId])
+  @@index([status, deletedAt])
+  @@unique([departmentId, code])
 }
 
 model Class {
@@ -62,6 +68,7 @@ model Class {
   semester       Int
   sectionCount   Int
   status         RecordStatus @default(ACTIVE)
+  deletedAt      DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -70,6 +77,7 @@ model Class {
   sections     Section[]
 
   @@index([programId, academicYearId])
+  @@index([status, deletedAt])
 }
 
 model Section {
@@ -78,11 +86,13 @@ model Section {
   name      String
   capacity  Int
   status    RecordStatus @default(ACTIVE)
+  deletedAt DateTime?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
   class Class @relation(fields: [classId], references: [id])
 
   @@index([classId])
+  @@index([status, deletedAt])
   @@unique([classId, name])
 }
