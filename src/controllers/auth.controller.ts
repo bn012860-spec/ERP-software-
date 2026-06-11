@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { ErrorCode, sendError, sendSuccess } from "../../packages/shared/src";
 import prisma from "../config/prisma";
 
 const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"] as const;
@@ -41,24 +42,24 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     if (!email || !password || !role) {
       logAuthEvent(req, "register_validation_failed", "warn", { reason: "missing_fields" });
-      return res.status(400).json({ error: "Missing fields" });
+      return sendError(res, 400, "Missing fields", ErrorCode.VALIDATION_FAILED);
     }
 
     if (!allowedRoles.includes(role)) {
       logAuthEvent(req, "register_validation_failed", "warn", { reason: "invalid_role" });
-      return res.status(400).json({ error: "Invalid role" });
+      return sendError(res, 400, "Invalid role", ErrorCode.VALIDATION_FAILED);
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
     if (!isValidEmail(normalizedEmail)) {
       logAuthEvent(req, "register_validation_failed", "warn", { reason: "invalid_email" });
-      return res.status(400).json({ error: "Invalid email format" });
+      return sendError(res, 400, "Invalid email format", ErrorCode.VALIDATION_FAILED);
     }
 
     if (password.length < 6) {
       logAuthEvent(req, "register_validation_failed", "warn", { reason: "weak_password" });
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+      return sendError(res, 400, "Password must be at least 6 characters", ErrorCode.VALIDATION_FAILED);
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -68,7 +69,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     if (existingUser) {
       logAuthEvent(req, "register_conflict", "warn", { email: normalizedEmail });
-      return res.status(409).json({ error: "Email already registered" });
+      return sendError(res, 409, "Email already registered", ErrorCode.CONFLICT);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -89,10 +90,10 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     logAuthEvent(req, "register_success", "info", { userId: createdUser.id, role: createdUser.role });
 
-    return res.status(201).json(createdUser);
+    return sendSuccess(res, createdUser, undefined, 201);
   } catch (err) {
     logAuthEvent(req, "register_error", "error", { error: err instanceof Error ? err.message : "Unknown error" });
-    return res.status(500).json({ error: "Internal server error" });
+    return sendError(res, 500, "Internal server error", ErrorCode.INTERNAL_ERROR);
   }
 };
 
@@ -102,14 +103,14 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     if (!email || !password) {
       logAuthEvent(req, "login_validation_failed", "warn", { reason: "missing_fields" });
-      return res.status(400).json({ error: "Missing fields" });
+      return sendError(res, 400, "Missing fields", ErrorCode.VALIDATION_FAILED);
     }
 
     const normalizedEmail = email.toLowerCase().trim();
 
     if (!isValidEmail(normalizedEmail)) {
       logAuthEvent(req, "login_validation_failed", "warn", { reason: "invalid_email" });
-      return res.status(400).json({ error: "Invalid email format" });
+      return sendError(res, 400, "Invalid email format", ErrorCode.VALIDATION_FAILED);
     }
 
     const user = await prisma.user.findUnique({
@@ -118,21 +119,21 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     if (!user) {
       logAuthEvent(req, "login_failed", "warn", { reason: "user_not_found", email: normalizedEmail });
-      return res.status(401).json({ error: "Invalid credentials" });
+      return sendError(res, 401, "Invalid credentials", ErrorCode.INVALID_CREDENTIALS);
     }
 
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 
     if (!passwordMatches) {
       logAuthEvent(req, "login_failed", "warn", { reason: "password_mismatch", userId: user.id });
-      return res.status(401).json({ error: "Invalid credentials" });
+      return sendError(res, 401, "Invalid credentials", ErrorCode.INVALID_CREDENTIALS);
     }
 
     const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
       logAuthEvent(req, "login_error", "error", { reason: "missing_jwt_secret" });
-      return res.status(500).json({ error: "JWT secret is not configured" });
+      return sendError(res, 500, "JWT secret is not configured", ErrorCode.CONFIGURATION_ERROR);
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, {
@@ -141,7 +142,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     logAuthEvent(req, "login_success", "info", { userId: user.id, role: user.role });
 
-    return res.json({
+    return sendSuccess(res, {
       token,
       user: {
         id: user.id,
@@ -150,7 +151,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     });
   } catch (err) {
     logAuthEvent(req, "login_error", "error", { error: err instanceof Error ? err.message : "Unknown error" });
-    return res.status(500).json({ error: "Internal server error" });
+    return sendError(res, 500, "Internal server error", ErrorCode.INTERNAL_ERROR);
   }
 };
 
@@ -158,7 +159,7 @@ export const whoami = async (req: Request, res: Response): Promise<Response> => 
   try {
     if (!req.user) {
       logAuthEvent(req, "whoami_unauthorized", "warn");
-      return res.status(401).json({ error: "Unauthorized" });
+      return sendError(res, 401, "Unauthorized", ErrorCode.UNAUTHORIZED);
     }
 
     const user = await prisma.user.findUnique({
@@ -171,17 +172,17 @@ export const whoami = async (req: Request, res: Response): Promise<Response> => 
 
     if (!user) {
       logAuthEvent(req, "whoami_not_found", "warn", { userId: req.user.userId });
-      return res.status(404).json({ error: "User not found" });
+      return sendError(res, 404, "User not found", ErrorCode.NOT_FOUND);
     }
 
     logAuthEvent(req, "whoami_success", "info", { userId: user.id, role: user.role });
 
-    return res.json({
+    return sendSuccess(res, {
       userId: user.id,
       role: user.role,
     });
   } catch (err) {
     logAuthEvent(req, "whoami_error", "error", { error: err instanceof Error ? err.message : "Unknown error" });
-    return res.status(500).json({ error: "Internal server error" });
+    return sendError(res, 500, "Internal server error", ErrorCode.INTERNAL_ERROR);
   }
 };

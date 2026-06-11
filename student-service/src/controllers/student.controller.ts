@@ -1,5 +1,6 @@
 import { Prisma, StudentStatus } from "@prisma/client";
 import { Request, Response } from "express";
+import { ErrorCode, buildPaginationMeta, sendSuccess } from "../../../packages/shared/src";
 import prisma from "../config/prisma";
 import { AppError } from "../middleware/error-handler.middleware";
 import { OrderSchema, SortBySchema } from "../validation/student.schemas";
@@ -57,18 +58,14 @@ export const listStudents = async (req: Request, res: Response): Promise<Respons
 
   logEvent(req, "student_list_success", "info", { page, limit, total, sortBy, order });
 
-  return res.json({
-    page,
-    limit,
-    total,
-    totalPages: Math.ceil(total / limit),
+  return sendSuccess(res, students, {
+    pagination: buildPaginationMeta(page, limit, total),
     filters: {
       status: typeof statusQuery === "string" ? statusQuery : null,
       classId: typeof classIdQuery === "string" ? classIdQuery : null,
       search: typeof searchQuery === "string" ? searchQuery : null,
     },
     sort: { sortBy, order },
-    data: students,
   });
 };
 
@@ -83,7 +80,7 @@ export const createStudent = async (req: Request, res: Response): Promise<Respon
   });
 
   logEvent(req, "student_create_success", "info", { studentId: student.id });
-  return res.status(201).json(student);
+  return sendSuccess(res, student, undefined, 201);
 };
 
 export const getStudentById = async (req: Request, res: Response): Promise<Response> => {
@@ -92,11 +89,11 @@ export const getStudentById = async (req: Request, res: Response): Promise<Respo
 
   if (!student) {
     logEvent(req, "student_get_not_found", "warn", { studentId });
-    throw new AppError(404, "Student not found");
+    throw new AppError(404, "Student not found", ErrorCode.NOT_FOUND);
   }
 
   logEvent(req, "student_get_success", "info", { studentId });
-  return res.json(student);
+  return sendSuccess(res, student);
 };
 
 export const updateStudent = async (req: Request, res: Response): Promise<Response> => {
@@ -106,7 +103,7 @@ export const updateStudent = async (req: Request, res: Response): Promise<Respon
   const existing = await prisma.student.findFirst({ where: { id: studentId, deletedAt: null } });
   if (!existing) {
     logEvent(req, "student_update_not_found", "warn", { studentId });
-    throw new AppError(404, "Student not found");
+    throw new AppError(404, "Student not found", ErrorCode.NOT_FOUND);
   }
 
   const updateData: Prisma.StudentUpdateInput = {
@@ -116,7 +113,7 @@ export const updateStudent = async (req: Request, res: Response): Promise<Respon
 
   const student = await prisma.student.update({ where: { id: studentId }, data: updateData });
   logEvent(req, "student_update_success", "info", { studentId });
-  return res.json(student);
+  return sendSuccess(res, student);
 };
 
 export const archiveStudent = async (req: Request, res: Response): Promise<Response> => {
@@ -125,7 +122,7 @@ export const archiveStudent = async (req: Request, res: Response): Promise<Respo
 
   if (!existing) {
     logEvent(req, "student_archive_not_found", "warn", { studentId });
-    throw new AppError(404, "Student not found");
+    throw new AppError(404, "Student not found", ErrorCode.NOT_FOUND);
   }
 
   const student = await prisma.student.update({
@@ -134,7 +131,7 @@ export const archiveStudent = async (req: Request, res: Response): Promise<Respo
   });
 
   logEvent(req, "student_archive_success", "info", { studentId });
-  return res.json(student);
+  return sendSuccess(res, student);
 };
 
 export const restoreStudent = async (req: Request, res: Response): Promise<Response> => {
@@ -143,12 +140,12 @@ export const restoreStudent = async (req: Request, res: Response): Promise<Respo
 
   if (!existing) {
     logEvent(req, "student_restore_not_found", "warn", { studentId });
-    throw new AppError(404, "Student not found");
+    throw new AppError(404, "Student not found", ErrorCode.NOT_FOUND);
   }
 
   if (!existing.deletedAt && existing.status !== StudentStatus.ARCHIVED) {
     logEvent(req, "student_restore_skipped", "warn", { studentId, reason: "already_active" });
-    throw new AppError(400, "Student is already active");
+    throw new AppError(400, "Student is already active", ErrorCode.CONFLICT);
   }
 
   const student = await prisma.student.update({
@@ -157,5 +154,5 @@ export const restoreStudent = async (req: Request, res: Response): Promise<Respo
   });
 
   logEvent(req, "student_restore_success", "info", { studentId });
-  return res.json(student);
+  return sendSuccess(res, student);
 };

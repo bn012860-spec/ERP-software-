@@ -36,4 +36,5 @@ export interface ApiErrorResponse {
 
 export interface AuthenticatedRequest extends Request {
   user?: AuthUser;
+  requestId?: string;
 }

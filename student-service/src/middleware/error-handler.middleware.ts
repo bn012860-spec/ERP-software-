@@ -1,13 +1,7 @@
 import { NextFunction, Request, Response } from "express";
+import { AppError, ErrorCode, sendError } from "../../../packages/shared/src";
 
-export class AppError extends Error {
-  statusCode: number;
-
-  constructor(statusCode: number, message: string) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+export { AppError };
 
 export const errorHandler = (
   err: unknown,
@@ -17,6 +11,7 @@ export const errorHandler = (
 ): Response => {
   const statusCode = err instanceof AppError ? err.statusCode : 500;
   const message = err instanceof Error ? err.message : "Internal Server Error";
+  const code = err instanceof AppError ? err.code : ErrorCode.INTERNAL_ERROR;
 
   console.log(
     JSON.stringify({
@@ -28,9 +23,10 @@ export const errorHandler = (
       method: req.method,
       path: req.originalUrl,
       statusCode,
+      code,
       message,
     }),
   );
 
-  return res.status(statusCode).json({ error: message });
+  return sendError(res, statusCode, message, code);
 };

@@ -319,4 +319,6 @@ The shared package under `packages/shared/` now provides:
 - `validateRequest`
 - `logEvent`, `logInfo`, `logWarn`, `logError`
 - Shared API types (`AuthUser`, `JwtPayload`, `PaginationMeta`, `ApiSuccessResponse`, `ApiErrorResponse`, `AuthenticatedRequest`)
+- Shared error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `INTERNAL_ERROR`, etc.)
+- Pagination helper (`buildPaginationMeta`)
 - Response helpers (`sendSuccess`, `sendError`) for standardized API envelopes

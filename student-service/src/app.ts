@@ -1,4 +1,5 @@
 import express from "express";
+import { sendError, sendSuccess, ErrorCode } from "../../packages/shared/src";
 import prisma from "./config/prisma";
 import { errorHandler } from "./middleware/error-handler.middleware";
 import studentRoutes from "./routes/student.routes";
@@ -11,9 +12,9 @@ app.use("/students", studentRoutes);
 app.get("/health", async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "ok", service: "student-service", database: "connected" });
+    return sendSuccess(res, { status: "ok", service: "student-service", database: "connected" });
   } catch {
-    res.status(503).json({ status: "degraded", service: "student-service", database: "disconnected" });
+    return sendError(res, 503, "Student service database is disconnected", ErrorCode.INTERNAL_ERROR, { status: "degraded", service: "student-service", database: "disconnected" });
   }
 });
 

@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { ErrorCode } from "./error-codes";
 import { ApiErrorResponse, ApiSuccessResponse } from "./types";
 
 export const sendSuccess = <TData, TMeta = undefined>(
@@ -20,7 +21,7 @@ export const sendError = (
   res: Response,
   statusCode: number,
   message: string,
-  code = "ERROR",
+  code: ErrorCode | string = ErrorCode.INTERNAL_ERROR,
   details?: unknown,
 ): Response<ApiErrorResponse> => {
   return res.status(statusCode).json({

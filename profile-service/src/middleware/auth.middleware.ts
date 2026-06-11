@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { ErrorCode, sendError } from "../../../packages/shared/src";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 interface TokenPayload extends JwtPayload {
@@ -9,18 +10,18 @@ interface TokenPayload extends JwtPayload {
 export const authenticate = (req: Request, res: Response, next: NextFunction): Response | void => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: "No token provided" });
+    if (!authHeader) return sendError(res, 401, "No token provided", ErrorCode.UNAUTHORIZED);
 
     const [scheme, token] = authHeader.split(" ");
-    if (scheme !== "Bearer" || !token) return res.status(401).json({ error: "Invalid authorization format" });
+    if (scheme !== "Bearer" || !token) return sendError(res, 401, "Invalid authorization format", ErrorCode.UNAUTHORIZED);
 
     const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) return res.status(500).json({ error: "JWT secret is not configured" });
+    if (!jwtSecret) return sendError(res, 500, "JWT secret is not configured", ErrorCode.CONFIGURATION_ERROR);
 
     const decoded = jwt.verify(token, jwtSecret) as TokenPayload;
     req.user = { userId: decoded.userId, role: decoded.role };
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid token" });
+    return sendError(res, 401, "Invalid token", ErrorCode.UNAUTHORIZED);
   }
 };

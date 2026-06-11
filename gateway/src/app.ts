@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import express from "express";
+import { ErrorCode, sendError, sendSuccess } from "../../packages/shared/src";
 import { config } from "./config";
 import { gatewayAuthenticate } from "./middleware/gateway-auth.middleware";
 import { forwardRequest, normalizeGatewayError } from "./proxy";
@@ -105,7 +106,7 @@ app.use((req, res, next) => {
       statusGroup: getStatusGroup(status),
       service: "api-gateway",
     });
-    return res.status(status).json({ error: "Too many requests" });
+    return sendError(res, status, "Too many requests", ErrorCode.FORBIDDEN);
   }
 
   return next();
@@ -171,7 +172,7 @@ const proxyToService = (
 };
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "api-gateway" });
+  return sendSuccess(res, { status: "ok", service: "api-gateway" });
 });
 
 app.use(

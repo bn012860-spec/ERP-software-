@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { ErrorCode, sendError } from "../../packages/shared/src";
 
 const hopByHopHeaders = new Set([
   "connection",
@@ -93,5 +94,5 @@ export const normalizeGatewayError = (err: unknown, res: Response): Response => 
       ? err.message
       : "Internal server error";
 
-  return res.status(status).json({ error: message });
+  return sendError(res, status, message, ErrorCode.INTERNAL_ERROR);
 };

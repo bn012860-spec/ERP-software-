@@ -1,19 +1,20 @@
 import { Request, Response } from "express";
+import { ErrorCode, sendError, sendSuccess } from "../../../packages/shared/src";
 import prisma from "../config/prisma";
 
 export const listAcademicYears = async (_req: Request, res: Response): Promise<Response> => {
   const data = await prisma.academicYear.findMany({ where: { status: "ACTIVE" }, orderBy: { startDate: "desc" } });
-  return res.json(data);
+  return sendSuccess(res, data);
 };
 
 export const getCurrentAcademicYear = async (_req: Request, res: Response): Promise<Response> => {
   const current = await prisma.academicYear.findFirst({ where: { isCurrent: true, status: "ACTIVE" } });
 
   if (!current) {
-    return res.status(404).json({ error: "Current academic year not found" });
+    return sendError(res, 404, "Current academic year not found", ErrorCode.NOT_FOUND);
   }
 
-  return res.json(current);
+  return sendSuccess(res, current);
 };
 
 export const createAcademicYear = async (req: Request, res: Response): Promise<Response> => {
@@ -39,45 +40,45 @@ export const createAcademicYear = async (req: Request, res: Response): Promise<R
     });
   });
 
-  return res.status(201).json(data);
+  return sendSuccess(res, data, undefined, 201);
 };
 
 export const listDepartments = async (_req: Request, res: Response): Promise<Response> => {
   const data = await prisma.department.findMany({ where: { deletedAt: null, status: "ACTIVE" }, orderBy: { name: "asc" } });
-  return res.json(data);
+  return sendSuccess(res, data);
 };
 
 export const createDepartment = async (req: Request, res: Response): Promise<Response> => {
   const data = await prisma.department.create({ data: req.body });
-  return res.status(201).json(data);
+  return sendSuccess(res, data, undefined, 201);
 };
 
 export const listPrograms = async (_req: Request, res: Response): Promise<Response> => {
   const data = await prisma.program.findMany({ where: { deletedAt: null, status: "ACTIVE" }, orderBy: { name: "asc" } });
-  return res.json(data);
+  return sendSuccess(res, data);
 };
 
 export const createProgram = async (req: Request, res: Response): Promise<Response> => {
   const data = await prisma.program.create({ data: req.body });
-  return res.status(201).json(data);
+  return sendSuccess(res, data, undefined, 201);
 };
 
 export const listClasses = async (_req: Request, res: Response): Promise<Response> => {
   const data = await prisma.class.findMany({ where: { deletedAt: null, status: "ACTIVE" }, orderBy: { createdAt: "desc" } });
-  return res.json(data);
+  return sendSuccess(res, data);
 };
 
 export const createClass = async (req: Request, res: Response): Promise<Response> => {
   const data = await prisma.class.create({ data: req.body });
-  return res.status(201).json(data);
+  return sendSuccess(res, data, undefined, 201);
 };
 
 export const listSections = async (_req: Request, res: Response): Promise<Response> => {
   const data = await prisma.section.findMany({ where: { deletedAt: null, status: "ACTIVE" }, orderBy: { createdAt: "desc" } });
-  return res.json(data);
+  return sendSuccess(res, data);
 };
 
 export const createSection = async (req: Request, res: Response): Promise<Response> => {
   const data = await prisma.section.create({ data: req.body });
-  return res.status(201).json(data);
+  return sendSuccess(res, data, undefined, 201);
 };

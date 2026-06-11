@@ -1,4 +1,5 @@
 import express from "express";
+import { sendError, sendSuccess, ErrorCode } from "../../packages/shared/src";
 import prisma from "./config/prisma";
 import profileRoutes from "./routes/profile.routes";
 
@@ -10,9 +11,9 @@ app.use("/profiles", profileRoutes);
 app.get("/health", async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "ok", service: "profile-service", database: "connected" });
+    return sendSuccess(res, { status: "ok", service: "profile-service", database: "connected" });
   } catch {
-    res.status(503).json({ status: "degraded", service: "profile-service", database: "disconnected" });
+    return sendError(res, 503, "Profile service database is disconnected", ErrorCode.INTERNAL_ERROR, { status: "degraded", service: "profile-service", database: "disconnected" });
   }
 });
 

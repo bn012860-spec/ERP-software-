@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { ErrorCode, sendError } from "../../../packages/shared/src";
 import { config } from "../config";
 
 interface GatewayTokenPayload extends JwtPayload {
@@ -16,17 +17,17 @@ export const gatewayAuthenticate = (
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      return res.status(401).json({ error: "No token provided" });
+      return sendError(res, 401, "No token provided", ErrorCode.UNAUTHORIZED);
     }
 
     const [scheme, token] = authHeader.split(" ");
 
     if (scheme !== "Bearer" || !token) {
-      return res.status(401).json({ error: "Invalid authorization format" });
+      return sendError(res, 401, "Invalid authorization format", ErrorCode.UNAUTHORIZED);
     }
 
     if (!config.jwtSecret) {
-      return res.status(500).json({ error: "Gateway JWT secret is not configured" });
+      return sendError(res, 500, "Gateway JWT secret is not configured", ErrorCode.CONFIGURATION_ERROR);
     }
 
     const decoded = jwt.verify(token, config.jwtSecret) as GatewayTokenPayload;
@@ -51,6 +52,6 @@ export const gatewayAuthenticate = (
         error: err instanceof Error ? err.message : "Unknown error",
       }),
     );
-    return res.status(401).json({ error: "Invalid token" });
+    return sendError(res, 401, "Invalid token", ErrorCode.UNAUTHORIZED);
   }
 };
