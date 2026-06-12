@@ -1,4 +1,4 @@
-import { AttendanceMarkSource, AttendanceStatus } from "../../../packages/shared/src";
+import { AttendanceMarkSource, AttendanceStatus } from "@erp/shared";
 import { z } from "zod";
 
 const AttendanceDateSchema = z.string().min(1).refine((value) => !Number.isNaN(Date.parse(value)), {

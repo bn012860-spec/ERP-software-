@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("SUBJECT_MAPPING_DATABASE_URL")
+}
+
+enum SubjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Subject {
+  id      String        @id @default(uuid())
+  code    String        @unique
+  name    String
+  credits Int
+  status  SubjectStatus @default(ACTIVE)
+
+  classSubjects           ClassSubject[]
+  teacherSubjects         TeacherSubject[]
+  teacherClassAssignments TeacherClassAssignment[]
+}
+
+model ClassSubject {
+  id        String @id @default(uuid())
+  classId   String
+  subjectId String
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@index([classId])
+  @@index([subjectId])
+  @@unique([classId, subjectId])
+}
+
+model TeacherSubject {
+  id               String @id @default(uuid())
+  teacherProfileId String
+  subjectId        String
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@index([teacherProfileId])
+  @@index([subjectId])
+  @@unique([teacherProfileId, subjectId])
+}
+
+model TeacherClassAssignment {
+  id               String @id @default(uuid())
+  teacherProfileId String
+  classId          String
+  subjectId        String
+  academicYearId   String
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@index([teacherProfileId])
+  @@index([classId, subjectId])
+  @@index([academicYearId])
+  @@unique([teacherProfileId, classId, subjectId, academicYearId])
+}

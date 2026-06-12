@@ -1,5 +1,5 @@
 import express from "express";
-import { sendSuccess } from "../packages/shared/src";
+import { sendSuccess } from "@erp/shared";
 import authRoutes from "./routes/auth.routes";
 
 const app = express();

@@ -1,4 +1,4 @@
-import { ResourceStatus } from "../../../packages/shared/src";
+import { ResourceStatus } from "@erp/shared";
 import { z } from "zod";
 
 export const CreateTeacherProfileSchema = z.object({

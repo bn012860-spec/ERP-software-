@@ -13,7 +13,13 @@
       "./src/types",
       "./node_modules/@types"
     ],
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "5.0",
+    "baseUrl": ".",
+    "paths": {
+      "@erp/shared": [
+        "packages/shared/src"
+      ]
+    }
   },
   "include": [
     "src/**/*"

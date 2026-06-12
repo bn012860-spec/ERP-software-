@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError, ErrorCode, sendError } from "../../../packages/shared/src";
+import { AppError, ErrorCode, sendError } from "@erp/shared";
 
 export { AppError };
 
