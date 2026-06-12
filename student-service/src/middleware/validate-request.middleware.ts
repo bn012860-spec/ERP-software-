@@ -1,1 +1,1 @@
-export { validateRequest } from "../../../packages/shared/src/validate-request";
+export { validateRequest } from "@erp/shared";

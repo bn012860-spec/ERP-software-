@@ -1,5 +1,5 @@
 import express from "express";
-import { ErrorCode, sendError, sendSuccess } from "../../packages/shared/src";
+import { ErrorCode, sendError, sendSuccess } from "@erp/shared";
 import prisma from "./config/prisma";
 import attendanceRoutes from "./routes/attendance.routes";
 import { errorHandler } from "./middleware/error-handler.middleware";

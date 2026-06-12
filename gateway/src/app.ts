@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import express from "express";
-import { ErrorCode, sendError, sendSuccess } from "../../packages/shared/src";
+import { ErrorCode, sendError, sendSuccess } from "@erp/shared";
 import { config } from "./config";
 import { gatewayAuthenticate } from "./middleware/gateway-auth.middleware";
 import { forwardRequest, normalizeGatewayError } from "./proxy";

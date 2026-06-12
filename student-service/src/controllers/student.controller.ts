@@ -1,6 +1,6 @@
 import { Prisma, StudentStatus } from "@prisma/client";
 import { Request, Response } from "express";
-import { ErrorCode, ResourceStatus, buildPaginationMeta, sendSuccess } from "../../../packages/shared/src";
+import { ErrorCode, ResourceStatus, buildPaginationMeta, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 import { AppError } from "../middleware/error-handler.middleware";
 import { OrderSchema, SortBySchema } from "../validation/student.schemas";

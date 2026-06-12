@@ -14,7 +14,7 @@ import {
   updateTeacher,
 } from "../controllers/profile.controller";
 import { authenticate } from "../middleware/auth.middleware";
-import { validateRequest } from "../../../packages/shared/src/validate-request";
+import { validateRequest } from "@erp/shared";
 import {
   CreateStaffProfileSchema,
   CreateTeacherProfileSchema,
