@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError, ErrorCode, sendError } from "@erp/shared";
+import { AppError, ErrorCode, logError, sendError } from "@erp/shared";
 
 export const errorHandler = (
   err: unknown,
@@ -11,20 +11,16 @@ export const errorHandler = (
   const message = err instanceof Error ? err.message : "Internal Server Error";
   const code = err instanceof AppError ? err.code : ErrorCode.INTERNAL_ERROR;
 
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      service: "attendance-service",
-      type: "unhandled_error",
-      level: "error",
-      requestId: req.headers["x-request-id"] ?? null,
-      method: req.method,
-      path: req.originalUrl,
-      statusCode,
-      code,
-      message,
-    }),
-  );
+  logError({
+    service: "attendance-service",
+    type: "unhandled_error",
+    requestId: typeof req.headers["x-request-id"] === "string" ? req.headers["x-request-id"] : null,
+    method: req.method,
+    path: req.originalUrl,
+    statusCode,
+    code,
+    message,
+  });
 
   return sendError(res, statusCode, message, code);
 };

@@ -1,64 +1,55 @@
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
-import { AppError, AttendanceMarkSource, AttendanceStatus, ErrorCode, buildPaginationMeta, sendSuccess } from "@erp/shared";
+import { AppError, AttendanceMarkSource, AttendanceStatus, ErrorCode, buildPaginationMeta, logError, logInfo, logWarn, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
-import { AttendanceOrderSchema, AttendanceSortBySchema } from "../validation/attendance.schemas";
+import { StudentAttendanceListQuerySchema, TeacherAttendanceListQuerySchema } from "../validation/attendance.schemas";
+
+const getRequestId = (req: Request): string | null =>
+  typeof req.headers["x-request-id"] === "string" ? req.headers["x-request-id"] : null;
 
 const logEvent = (req: Request, type: string, level: "info" | "warn" | "error", extra?: Record<string, unknown>): void => {
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      service: "attendance-service",
-      type,
-      level,
-      requestId: req.headers["x-request-id"] ?? null,
-      method: req.method,
-      path: req.originalUrl,
-      ...extra,
-    }),
-  );
+  const payload = {
+    service: "attendance-service",
+    type,
+    requestId: getRequestId(req),
+    method: req.method,
+    path: req.originalUrl,
+    ...extra,
+  };
+
+  if (level === "error") {
+    logError(payload);
+    return;
+  }
+
+  if (level === "warn") {
+    logWarn(payload);
+    return;
+  }
+
+  logInfo(payload);
 };
-
-const getPagination = (req: Request): { page: number; limit: number; skip: number } => {
-  const page = Math.max(Number(req.query.page ?? 1), 1);
-  const limit = Math.min(Math.max(Number(req.query.limit ?? 20), 1), 100);
-
-  return { page, limit, skip: (page - 1) * limit };
-};
-
-const getSort = (req: Request): { sortBy: "attendanceDate" | "createdAt" | "updatedAt"; order: "asc" | "desc" } => {
-  const sortBy = AttendanceSortBySchema.safeParse(req.query.sortBy).success
-    ? (req.query.sortBy as "attendanceDate" | "createdAt" | "updatedAt")
-    : "attendanceDate";
-  const order = AttendanceOrderSchema.safeParse(req.query.order).success
-    ? (req.query.order as "asc" | "desc")
-    : "desc";
-
-  return { sortBy, order };
-};
-
-const optionalString = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
-
-const optionalStatus = (value: unknown): AttendanceStatus | undefined =>
-  typeof value === "string" && Object.values(AttendanceStatus).includes(value as AttendanceStatus)
-    ? (value as AttendanceStatus)
-    : undefined;
 
 const toAttendanceDay = (value: string): Date => {
   const date = new Date(value);
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 };
 
+const buildAttendanceDateFilter = (attendanceDate?: string, fromDate?: string, toDate?: string): Prisma.DateTimeFilter | Date | undefined => {
+  if (attendanceDate) return toAttendanceDay(attendanceDate);
+  if (!fromDate && !toDate) return undefined;
+
+  return {
+    ...(fromDate ? { gte: toAttendanceDay(fromDate) } : {}),
+    ...(toDate ? { lte: toAttendanceDay(toDate) } : {}),
+  };
+};
+
 export const listStudentAttendance = async (req: Request, res: Response): Promise<Response> => {
-  const { page, limit, skip } = getPagination(req);
-  const { sortBy, order } = getSort(req);
-  const studentId = optionalString(req.query.studentId);
-  const classId = optionalString(req.query.classId);
-  const sectionId = optionalString(req.query.sectionId);
-  const academicYearId = optionalString(req.query.academicYearId);
-  const status = optionalStatus(req.query.status);
-  const attendanceDate = optionalString(req.query.attendanceDate);
+  const query = StudentAttendanceListQuerySchema.parse(req.query);
+  const { page, limit, sortBy, order, studentId, classId, sectionId, academicYearId, status, attendanceDate, fromDate, toDate } = query;
+  const skip = (page - 1) * limit;
+  const attendanceDateFilter = buildAttendanceDateFilter(attendanceDate, fromDate, toDate);
 
   const where: Prisma.StudentAttendanceWhereInput = {
     ...(studentId ? { studentId } : {}),
@@ -66,7 +57,7 @@ export const listStudentAttendance = async (req: Request, res: Response): Promis
     ...(sectionId ? { sectionId } : {}),
     ...(academicYearId ? { academicYearId } : {}),
     ...(status ? { status } : {}),
-    ...(attendanceDate ? { attendanceDate: toAttendanceDay(attendanceDate) } : {}),
+    ...(attendanceDateFilter ? { attendanceDate: attendanceDateFilter } : {}),
   };
 
   const [total, data] = await Promise.all([
@@ -78,7 +69,7 @@ export const listStudentAttendance = async (req: Request, res: Response): Promis
 
   return sendSuccess(res, data, {
     pagination: buildPaginationMeta(page, limit, total),
-    filters: { studentId, classId, sectionId, academicYearId, status, attendanceDate },
+    filters: { studentId, classId, sectionId, academicYearId, status, attendanceDate, fromDate, toDate },
     sort: { sortBy, order },
   });
 };
@@ -139,16 +130,15 @@ export const updateStudentAttendance = async (req: Request, res: Response): Prom
 };
 
 export const listTeacherAttendance = async (req: Request, res: Response): Promise<Response> => {
-  const { page, limit, skip } = getPagination(req);
-  const { sortBy, order } = getSort(req);
-  const teacherProfileId = optionalString(req.query.teacherProfileId);
-  const status = optionalStatus(req.query.status);
-  const attendanceDate = optionalString(req.query.attendanceDate);
+  const query = TeacherAttendanceListQuerySchema.parse(req.query);
+  const { page, limit, sortBy, order, teacherProfileId, status, attendanceDate, fromDate, toDate } = query;
+  const skip = (page - 1) * limit;
+  const attendanceDateFilter = buildAttendanceDateFilter(attendanceDate, fromDate, toDate);
 
   const where: Prisma.TeacherAttendanceWhereInput = {
     ...(teacherProfileId ? { teacherProfileId } : {}),
     ...(status ? { status } : {}),
-    ...(attendanceDate ? { attendanceDate: toAttendanceDay(attendanceDate) } : {}),
+    ...(attendanceDateFilter ? { attendanceDate: attendanceDateFilter } : {}),
   };
 
   const [total, data] = await Promise.all([
@@ -160,7 +150,7 @@ export const listTeacherAttendance = async (req: Request, res: Response): Promis
 
   return sendSuccess(res, data, {
     pagination: buildPaginationMeta(page, limit, total),
-    filters: { teacherProfileId, status, attendanceDate },
+    filters: { teacherProfileId, status, attendanceDate, fromDate, toDate },
     sort: { sortBy, order },
   });
 };

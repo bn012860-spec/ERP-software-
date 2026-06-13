@@ -2,7 +2,7 @@ export type LogLevel = "info" | "warn" | "error";
 
 export interface LogPayload {
   service: string;
-  type: string;
+  type?: string;
   requestId?: string | null;
   [key: string]: unknown;
 }
