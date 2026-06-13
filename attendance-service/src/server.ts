@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import app from "./app";
+import prisma from "./config/prisma";
 
 dotenv.config();
 
@@ -12,8 +13,10 @@ const server = app.listen(port, () => {
 const shutdown = (signal: string): void => {
   console.log(`[attendance-service] received ${signal}, shutting down gracefully`);
   server.close(() => {
-    console.log("[attendance-service] shutdown complete");
-    process.exit(0);
+    void prisma.$disconnect().finally(() => {
+      console.log("[attendance-service] shutdown complete");
+      process.exit(0);
+    });
   });
 };
 

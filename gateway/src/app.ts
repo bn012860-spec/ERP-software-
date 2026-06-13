@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import express from "express";
-import { ErrorCode, sendError, sendSuccess } from "@erp/shared";
+import { ErrorCode, logError, logInfo, logWarn, sendError, sendSuccess } from "@erp/shared";
 import { config } from "./config";
 import { gatewayAuthenticate } from "./middleware/gateway-auth.middleware";
 import { forwardRequest, normalizeGatewayError } from "./proxy";
@@ -37,12 +37,17 @@ const getStatusGroup = (status: number): "2xx" | "3xx" | "4xx" | "5xx" => {
 };
 
 const logEvent = (event: LogEvent): void => {
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      ...event,
-    }),
-  );
+  if (event.level === "error") {
+    logError(event);
+    return;
+  }
+
+  if (event.level === "warn") {
+    logWarn(event);
+    return;
+  }
+
+  logInfo(event);
 };
 
 app.use(express.json({ limit: "1mb" }));

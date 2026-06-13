@@ -1,23 +1,34 @@
 import { Prisma, StudentStatus } from "@prisma/client";
 import { Request, Response } from "express";
-import { ErrorCode, ResourceStatus, buildPaginationMeta, sendSuccess } from "@erp/shared";
+import { ErrorCode, ResourceStatus, buildPaginationMeta, logError, logInfo, logWarn, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 import { AppError } from "../middleware/error-handler.middleware";
 import { OrderSchema, SortBySchema } from "../validation/student.schemas";
 
+const getRequestId = (req: Request): string | null =>
+  typeof req.headers["x-request-id"] === "string" ? req.headers["x-request-id"] : null;
+
 const logEvent = (req: Request, type: string, level: "info" | "warn" | "error", extra?: Record<string, unknown>): void => {
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      service: "student-service",
-      type,
-      level,
-      requestId: req.headers["x-request-id"] ?? null,
-      method: req.method,
-      path: req.originalUrl,
-      ...extra,
-    }),
-  );
+  const payload = {
+    service: "student-service",
+    type,
+    requestId: getRequestId(req),
+    method: req.method,
+    path: req.originalUrl,
+    ...extra,
+  };
+
+  if (level === "error") {
+    logError(payload);
+    return;
+  }
+
+  if (level === "warn") {
+    logWarn(payload);
+    return;
+  }
+
+  logInfo(payload);
 };
 
 export const listStudents = async (req: Request, res: Response): Promise<Response> => {

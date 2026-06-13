@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ErrorCode, sendError, sendSuccess } from "@erp/shared";
+import { ErrorCode, logError, logInfo, logWarn, sendError, sendSuccess } from "@erp/shared";
 import prisma from "../config/prisma";
 
 const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"] as const;
@@ -21,19 +21,30 @@ interface LoginBody {
 const isValidEmail = (value: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+const getRequestId = (req: Request): string | null =>
+  typeof req.headers["x-request-id"] === "string" ? req.headers["x-request-id"] : null;
+
 const logAuthEvent = (req: Request, event: string, level: "info" | "warn" | "error", extra?: Record<string, unknown>): void => {
-  console.log(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      service: "auth-service",
-      event,
-      level,
-      requestId: req.headers["x-request-id"] ?? null,
-      method: req.method,
-      path: req.originalUrl,
-      ...extra,
-    }),
-  );
+  const payload = {
+    service: "auth-service",
+    event,
+    requestId: getRequestId(req),
+    method: req.method,
+    path: req.originalUrl,
+    ...extra,
+  };
+
+  if (level === "error") {
+    logError(payload);
+    return;
+  }
+
+  if (level === "warn") {
+    logWarn(payload);
+    return;
+  }
+
+  logInfo(payload);
 };
 
 export const register = async (req: Request, res: Response): Promise<Response> => {
